@@ -206,7 +206,7 @@ inline bool kruskal() {
 			if (cnt_kruskal == n_kruskal - 1) break;
 		}
 	}
-	return cnt_kruskal == n_kruskal - 1;  // 返回是否连通
+	return cnt_kruskal == n_kruskal - 1;
 }
 /*线段树（屎山）*/
 cst ll SegTreeMA = 2 * 1e5 + 5;
@@ -485,4 +485,8 @@ int main() {
 	
 	return 0;
 }
-/*模板来源：Kevinrzy103874*/
+/*
+模板来源:https://github.com/Kevinrzy103874/c_main_head_file_for_contest
+作者:Kevinrzy103874(任思瑞)
+遵循MIT开源原则
+*/
