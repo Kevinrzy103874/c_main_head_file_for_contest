@@ -7,6 +7,7 @@ age:13
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
 using namespace std;
+using namespace __gnu_pbds;
 /*文件读写*/
 #define fre(c) freopen(c".in","r",stdin);freopen(c".out","w",stdout);
 /*调试优化*/
@@ -70,6 +71,26 @@ using namespace std;
 #define ls (x << 1)
 #define rs (x << 1 | 1)
 #define lowbit(x) x & -x
+/*PBDS平衡树*/
+// 红黑树（自动排序，能查排名）
+template<typename T>
+using Tree_pbds = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
+// 可重复红黑树（允许相同元素）
+template<typename T>
+using MultiTree_pbds = tree<T, null_type, less_equal<T>, rb_tree_tag, tree_order_statistics_node_update>;
+#define shu_pbds(T, name) Tree_pbds<T> name // 声明一个平衡树
+#define duoshu_pbds(T, name) MultiTree_pbds<T> name // 声明一个可重复平衡树
+#define jia_pbds(tr, x) tr.insert(x) // 插入一个数
+#define shan_pbds(tr, x) tr.erase(x) // 删除一个数
+#define paiming_pbds(tr, x) tr.order_of_key(x) // 查x的排名（有几个数比x小，从0开始）
+#define dishuk_pbds(tr, k) *tr.find_by_order(k) // 查排名为k的数（k从0开始）
+#define qian_pbds(tr, x) *(--tr.lower_bound(x)) // 查x的前一个数（比x小的最大数）
+#define hou_pbds(tr, x) *tr.upper_bound(x) // 查x的后一个数（比x大的最小数）
+#define you_pbds(tr, x) (tr.find(x) != tr.end()) // 查x是否存在（1有0无）
+#define daxiao_pbds(tr) tr.size() // 树的大小
+#define qing_pbds(tr) tr.clear() // 清空树
+#define zuixiao_pbds(tr) *tr.begin() // 最小的数
+#define zuida_pbds(tr) *tr.rbegin() // 最大的数
 /*数学常量*/
 cst int INF = 0x3f3f3f3f;
 cst ll LINF = 0x3f3f3f3f3f3f3f3fLL;
@@ -195,9 +216,6 @@ struct Segtree {
 	ll maxx[SegTreeMA << 2];     // 区间最大值
 	ll minn[SegTreeMA << 2];     // 区间最小值
 	ll xorv[SegTreeMA << 2];     // 区间异或值
-	// 历史最值
-	ll hmax[SegTreeMA << 2];     // 历史最大值
-	ll hmin[SegTreeMA << 2];     // 历史最小值
 	// 懒标记
 	ll add[SegTreeMA << 2];      // 加法懒标记
 	ll hadd[SegTreeMA << 2];     // 历史最大加法标记
@@ -212,8 +230,6 @@ struct Segtree {
 		maxx[x] = max(maxx[ls], maxx[rs]);
 		minn[x] = min(minn[ls], minn[rs]);
 		xorv[x] = xorv[ls] ^ xorv[rs];
-		hmax[x] = max(hmax[ls], hmax[rs]);
-		hmin[x] = min(hmin[ls], hmin[rs]);
 	}
 	// 动态向上更新
 	inline void push_up_dynamic(ll x) {
@@ -221,15 +237,11 @@ struct Segtree {
 		maxx[x] = max(maxx[lson[x]], maxx[rson[x]]);
 		minn[x] = min(minn[lson[x]], minn[rson[x]]);
 		xorv[x] = xorv[lson[x]] ^ xorv[rson[x]];
-		hmax[x] = max(hmax[lson[x]], hmax[rson[x]]);
-		hmin[x] = min(hmin[lson[x]], hmin[rson[x]]);
 	}
 	// 建树（静态）
 	inline void build(ll x, ll l, ll r) {
 		if (l == r) {
 			sum[x] = maxx[x] = minn[x] = xorv[x] = a[l];
-			hmax[x] = maxx[x];
-			hmin[x] = minn[x];
 			return ;
 		}
 		build(ls, l, mid);
@@ -238,9 +250,6 @@ struct Segtree {
 	}
 	// 应用加法标记（通用）
 	inline void apply_add(ll x, ll l, ll r, ll v, ll hv) {
-		hmax[x] = max(hmax[x], maxx[x] + hv);
-		hmin[x] = min(hmin[x], minn[x] + hv);
-		hadd[x] = max(hadd[x], add[x] + hv);
 		sum[x] += v * (r - l + 1);
 		maxx[x] += v;
 		minn[x] += v;
@@ -281,8 +290,6 @@ struct Segtree {
 		if (!x) x = ++cnt;
 		if (l == r) {
 			sum[x] = maxx[x] = minn[x] = xorv[x] = v;
-			hmax[x] = max(hmax[x], v);
-			hmin[x] = min(hmin[x], v);
 			return ;
 		}
 		if (pos <= mid) set_val(lson[x], l, mid, pos, v);
@@ -333,8 +340,6 @@ struct Segtree {
 			maxx[x] = max(maxx[x], maxx[y]);
 			minn[x] = min(minn[x], minn[y]);
 			xorv[x] ^= xorv[y];
-			hmax[x] = max(hmax[x], hmax[y]);
-			hmin[x] = min(hmin[x], hmin[y]);
 			return x;
 		}
 		push_down_dynamic(x, l, r);
@@ -355,8 +360,6 @@ struct Segtree {
 				swap(maxx[x], maxx[y]);
 				swap(minn[x], minn[y]);
 				swap(xorv[x], xorv[y]);
-				swap(hmax[x], hmax[y]);
-				swap(hmin[x], hmin[y]);
 				return ;
 			}
 		}
@@ -382,8 +385,6 @@ struct Segtree {
 		memset(maxx, 0, sizeof(maxx));
 		memset(minn, 0, sizeof(minn));
 		memset(xorv, 0, sizeof(xorv));
-		memset(hmax, 0, sizeof(hmax));
-		memset(hmin, 0, sizeof(hmin));
 		memset(add, 0, sizeof(add));
 		memset(hadd, 0, sizeof(hadd));
 	}
@@ -477,7 +478,7 @@ inline void build_new_scc(ll n) {
 	}
 }
 /*全局变量区*/
-
+		
 int main() {
 //	ios
 //	fre("")
